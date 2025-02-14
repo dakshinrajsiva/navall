@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
 const app = express();
 
 // Middleware
@@ -10,6 +11,9 @@ app.use(cors({
     origin: process.env.REACT_APP_ALLOWED_ORIGINS
 }));
 app.use(express.json());
+
+// Serve static files from the React build directory
+app.use(express.static(path.join(__dirname, 'build')));
 
 // Main proxy route for chat
 app.post('/proxy', async (req, res) => {
@@ -30,6 +34,11 @@ app.post('/proxy', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// Handle all other routes by serving the React app
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
